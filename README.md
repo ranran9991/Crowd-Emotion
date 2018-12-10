@@ -10,8 +10,10 @@ Requirements:
 The dataset is generated using Microsofts Cognitive Services API, specifically, Bing Image Search API, so you should get an API key from [here](https://azure.microsoft.com/en-us/try/cognitive-services/my-apis/?api=bing-image-search-api)
 
 Run the python script dataset_prep.py with the following flags arguments:
--o / --output path/to/desired/output/directory
--k / --key API key 
+
+ -o / --output path/to/desired/output/directory
+ 
+ -k / --key API key 
 
     python dataset_prep.py -o path/to/desired/output/directory -k YOUR_KEY_HERE
 
