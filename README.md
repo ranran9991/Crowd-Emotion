@@ -23,11 +23,7 @@ Next, you should look over the folders and remove pictures that are not suitble,
 
 run the cutface.py script with the -p / --path argument. This would grayscale the images and cut the faces from the pictures, removing the old pictures in the process.
 
-<<<<<<< HEAD
-python cutface.py -p path/to/dataset/folder
-=======
-    python cutface.py
 
->>>>>>> cadd92cdf63b1fcd9ff81f3ac82a23e351350806
+python cutface.py -p path/to/dataset/folder
 
 Note: I got preety poor results using this method, opencv did not manage to cut the faces very well and i got lots of false positives, it will probably be better to use existing datasets if possible
