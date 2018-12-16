@@ -3,9 +3,14 @@ import os
 import sys
 import cv2
 
-paths = ['C:\\Users\\ranran9991\\Desktop\\dataset\\happy']
+# construct the argument parser and parse the arguments
+ap = argparse.ArgumentParser()
+ap.add_argument("-p", "--path", required=True,
+	help="path to output directory of images")
 
-
+args = vars(ap.parse_args())
+dataset_dir = args['path']
+paths = [os.path.join(dataset_dir, x) for x in os.listdir(dataset_dir)]
 
 for class_path in paths:
     for image in os.listdir(class_path):
@@ -20,7 +25,7 @@ for class_path in paths:
         
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         face_cascade = cv2.CascadeClassifier("C:\\Users\\ranran9991\\Envs\\env\\haarcascade_frontalface_default.xml")
-        faces = face_cascade.detectMultiScale(img, 1.2, 5, minSize=(100,100))
+        faces = face_cascade.detectMultiScale(img, 1.1, 5)
         if(faces is None):
             os.remove(image)
             continue
