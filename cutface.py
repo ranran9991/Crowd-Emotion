@@ -42,5 +42,5 @@ for class_path in paths:
             faceimg = img[ny:ny+nr, nx:nx+nr]
             lastimg = cv2.resize(faceimg, (64,64))
             i +=1
-            cv2.imwrite(os.path.join(class_path ,name + "%d.jpg" %i), lastimg)
+            cv2.imwrite(os.path.join(class_path ,name + "%d" %i), lastimg)
         os.remove(image)
