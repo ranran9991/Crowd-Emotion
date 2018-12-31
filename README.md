@@ -1,5 +1,5 @@
 # Crowd-Emotion
-Datasets:
+## Datasets:
 1. FER2013
  - Download the dataset from [here](https://www.kaggle.com/c/challenges-in-representation-learning-facial-expression-recognition-challenge/data)
 2. CK+
@@ -8,7 +8,7 @@ Datasets:
  - python cutface.py -p path/to/dataset/folder
 3. Generate the dataset yourself
 
-Dataset generation:
+### Dataset generation:
 
 Requirements:
  - python 3.6 
@@ -35,3 +35,27 @@ run the cutface.py script with the -p / --path argument. This would grayscale th
 python cutface.py -p path/to/dataset/folder
 
 Note: I got preety poor results using this method, opencv did not manage to cut the faces very well and i got lots of false positives, it will probably be better to use existing datasets if possible
+
+
+## Dataset usage
+you should use the dataset using the 'EmotionDataset' class found in emotion_dataset_class.py and in conjunction with pytorch's DataLoader class like so:
+```python
+# define transforms over dataset
+transform = torchvision.transforms.Compose(
+    [torchvision.transforms.ToTensor()]
+)
+path = 'path\\to\\dataset'
+# can either be 'FER2013', 'CK+'. anything else use take the generated dataset
+dataset_type = 'CK+'
+# can either be 'Training' or 'Validation'
+split = 'Training'
+
+# define dataset
+dataset = EmotionDataset(path,
+                         dataset_type=dataset_type,
+                         split=split,
+                         transform=transform)
+                         
+# create data loader
+training_loader = DataLoader(dataset, batch_size=1, num_workers=4)
+```
