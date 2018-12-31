@@ -1,4 +1,12 @@
 # Crowd-Emotion
+Datasets:
+1. FER2013
+ - Download the dataset from [here](https://www.kaggle.com/c/challenges-in-representation-learning-facial-expression-recognition-challenge/data)
+2. CK+
+ - Download the dataset from [here](http://www.consortium.ri.cmu.edu/ckagree/)
+ - Run the script cutface.py with the -p / --path argument 
+ - python cutface.py -p path/to/dataset/folder
+3. Generate the dataset yourself
 
 Dataset generation:
 

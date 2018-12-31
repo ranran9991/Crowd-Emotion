@@ -12,8 +12,7 @@ help="API key for the Microsoft Cognitive Services API")
 
 args = vars(ap.parse_args())
 
-# emotions = ['happy', 'angry', 'surprised', 'neutral', 'sad', 'afraid', 'disgusted']
-emotions = ['happy']
+emotions = ['happy', 'angry', 'neutral', 'sad', 'afraid', 'disgusted']
 queries = ["\"" + emotion + " person face\"" for emotion in emotions]
 
 path = args['output']
