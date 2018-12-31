@@ -38,7 +38,7 @@ Note: I got preety poor results using this method, opencv did not manage to cut 
 
 
 ## Dataset usage
-you should use the dataset using the 'EmotionDataset' class found in emotion_dataset_class.py and in conjunction with pytorch's DataLoader class like so:
+you should use the dataset using the `EmotionDataset` class found in emotion_dataset_class.py and in conjunction with pytorch's DataLoader class like so:
 ```python
 # define transforms over dataset
 transform = torchvision.transforms.Compose(
