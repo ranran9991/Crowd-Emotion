@@ -46,7 +46,7 @@ transform = torchvision.transforms.Compose(
 )
 # For FER2013 this should be the path to the csv file
 # For CK+ this shold be the path to the directory containing the 'cohn-kanade-images' and 'Emotion' directories
-# For the generated dataset this should be the path to the directory containing a directory for each image
+# For the generated dataset this should be the path to the directory containing a directory for each emotion
 path = 'path\\to\\dataset'
 # can either be 'FER2013', 'CK+'. anything else use take the generated dataset
 dataset_type = 'CK+'
