@@ -48,7 +48,7 @@ def preprocess_fer2013(path):
             if row[-1] == 'Training':
                 training_x.append(image_bytes)
                 training_y.append(int(row[0]))
-            if row[-1] == 'PublicTest' or row[-1] == 'PrivateText':
+            if row[-1] == 'PublicTest' or row[-1] == 'PrivateTest':
                 validation_x.append(image_bytes)
                 validation_y.append(int(row[0]))
     
