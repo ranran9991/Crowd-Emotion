@@ -36,7 +36,7 @@ class EmotionDataset(data.Dataset):
             self.training_labels = training_labels
         
         if self.split == 'Validation' and dataset_type == 'FER2013':
-            self.validation_data = (np.asarray(validation_data)).reshape((3589, 48, 48))
+            self.validation_data = (np.asarray(validation_data)).reshape((7178, 48, 48))
             self.validation_labels = validation_labels
 
     def __getitem__(self, index):
