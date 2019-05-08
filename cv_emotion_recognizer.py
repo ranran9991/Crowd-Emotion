@@ -11,9 +11,9 @@ from prediction import Prediction
 
 transform = torchvision.transforms.Compose(
     [
-    torchvision.transforms.Resize((224, 224)),
-    torchvision.transforms.ToTensor(),
-    torchvision.transforms.Normalize((129.186279296875/255, 104.76238250732422/255, 93.59396362304688/255),  (1/255, 1/255, 1/255)),
+        torchvision.transforms.Resize((224, 224)),
+        torchvision.transforms.ToTensor(),
+        torchvision.transforms.Normalize((129.186279296875/255, 104.76238250732422/255, 93.59396362304688/255),  (1/255, 1/255, 1/255)),
     ]
 )
 # model number 2
@@ -170,12 +170,12 @@ while True:
         max2 = out.max(0)[1]
         # prepare emotion string for printing
         emotion = '1. ' + emotions[max1] + ' ' + '2.' + emotions[max2]
-        cv2.putText(frame, emotion, (startX, startY), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255))
+        cv2.putText(frame, emotion, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255))
         cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
     # assign the average function
-    avg_func = average.average
+    avg_func = average.hard_average
     # evaluate the average using the given method
-    avg = avg_func(predictions)
+    avg = np.array(avg_func(predictions))
     # show image
     cv2.imshow('Video', frame)
     # press q to close the window

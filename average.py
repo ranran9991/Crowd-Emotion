@@ -1,9 +1,12 @@
-def average(predictions):
-    for pred in predictions:
-        print(pred.out)
-    return predictions[0].out
-
 def hard_average(predictions):
+    """averages out input vectors by averaging their hard predictions isntead of whole confidence vectors
+    
+    Arguments:
+        predictions {list of predictions} -- predictions to average
+    
+    Returns:
+        vector -- one-hot vector corresponding to the average
+    """
     # get the length of each prediction
     pred_len = len(predictions[0].out)
     # initialize a list of counters
@@ -22,6 +25,14 @@ def hard_average(predictions):
 
 
 def soft_average(predictions):
+    """averages out input vectors by averaging their confidence vectors
+    
+    Arguments:
+        predictions {list of predictions} -- predictions to average
+    
+    Returns:
+        vector -- averaged confidence vector
+    """
     # sum all predictions
     out = sum([pred.out for pred in predictions])
     # evaluate the average
@@ -29,6 +40,15 @@ def soft_average(predictions):
     return out
 
 def depth_average(predictions):
+    """averages out input vectors by averaging their confidence vectors and taking
+    into account how big the face was in the image
+    
+    Arguments:
+        predictions {list of predictions} -- predictions to average
+    
+    Returns:
+        vector -- averaged confidence vector
+    """
     # sum all predictions
     out = sum([pred.out * pred.bounding_box.area() for pred in predictions])
     # evaluate the average
@@ -36,6 +56,15 @@ def depth_average(predictions):
     return out
 
 def depth_sqrt_average(predictions):
+    """averages out input vectors by averaging their confidence vectors and taking
+    into account the square root of the area each image had
+    
+    Arguments:
+        predictions {list of predictions} -- predictions to average
+    
+    Returns:
+        vector -- averaged confidence vectors
+    """
     # sum all predictions
     out = sum([pred.out * (pred.bounding_box.area()**.5) for pred in predictions])
     # evaluate the average
