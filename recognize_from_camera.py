@@ -1,6 +1,7 @@
-import cv2
 import sys
 import os
+import cv2
+import argparse
 import numpy as np
 import torch
 import torch.nn as nn
@@ -18,12 +19,17 @@ transform = torchvision.transforms.Compose(
     ]
 )
 
+ap = argparse.ArgumentParser()
+ap.add_argument('--emotion', required=True, help='path to emotion net weights')
+ap.add_argument('--face', required=True, help='path to face recognition net weights directory')
+ap.add_argument('--camera_num', required=False, help='Camera number, 0 for laptop webcam, 1,2,... for connected camera, Default is 0')
+args = vars(ap.parse_args())
 
 # enter the full path to a classifier xml file, for example:
 # face recognition model
-net_path = sys.argv[1]
+net_path = args['face']
 # emotion classification model
-emotion_net_path = sys.argv[2]
+emotion_net_path = args['emotion']
 
 deploy = os.path.join(net_path, 'deploy.prototxt.txt')
 params = os.path.join(net_path, 'res10_300x300_ssd_iter_140000.caffemodel')
@@ -37,11 +43,13 @@ emotion_net.load_state_dict(state_dict)
 
 # evaluation mode
 emotion_net.eval()
-
 emotions = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
 
-# first available camera, for laptops this will be the laptop cam
-video_capture = cv2.VideoCapture(0)
+if args['camera_num'] != None:
+    video_capture = cv2.VideoCapture(int(args['camera_num']))
+else:
+    # first available camera, for laptops this will be the laptop cam
+    video_capture = cv2.VideoCapture(0)
 
 while True:
     # capture an image
