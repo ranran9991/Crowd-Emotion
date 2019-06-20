@@ -1,173 +1,66 @@
+import numpy as np
 import torch
-import time
-from torch.utils.data import DataLoader
-from torch.autograd import Variable
-from sklearn.metrics import confusion_matrix
 import torch.nn as nn
-import torch.optim as optim
-import torchvision
-from emotion_dataset_class import EmotionDataset
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-#HYPER PARAMETERS
-LR = 0.0001
-WEIGHT_DECAY = 0
-EPOCHS = 200
-BATCH_SIZE = 128
-transform = {
-    'train' : torchvision.transforms.Compose(
-    [
-     torchvision.transforms.RandomHorizontalFlip(),
-     torchvision.transforms.RandomRotation(40),
-     torchvision.transforms.ToTensor(),
-    ]
-    ),
-    'validation' : torchvision.transforms.Compose(
-    [
-     torchvision.transforms.ToTensor(),
-    ]
-    )
-}
 
 class EmotionRecognizer(nn.Module):
-  def __init__(self, image_size, num_emotions):
 
-    super(EmotionRecognizer, self).__init__()
-    self.image_size = image_size
-    
-    self.conv = nn.Sequential(
-      nn.BatchNorm2d(3),
-      nn.Conv2d(3, 64, kernel_size=5),
-      nn.ReLU(),
-      nn.MaxPool2d(kernel_size=5, stride=2, padding=2),
-      
-      nn.BatchNorm2d(64),
-      nn.Conv2d(64, 128, kernel_size=3, padding=1),
-      nn.ReLU(),
-       
-      nn.BatchNorm2d(128),  
-      nn.Conv2d(128, 128, kernel_size=3, padding=1),
-      nn.ReLU(),
-      nn.AvgPool2d(kernel_size=3, stride=2),
-      
-      nn.BatchNorm2d(128),
-      nn.Conv2d(128, 128, kernel_size=3, padding=1),
-      nn.ReLU(),
-        
-      nn.BatchNorm2d(128),  
-      nn.Conv2d(128, 128, kernel_size=3, padding=1),
-      nn.ReLU(),
-      nn.Dropout(0.5),
-      nn.AvgPool2d(kernel_size=3, stride=2, padding=1),
-    )
-    
-    self.fc = nn.Sequential(
-        nn.BatchNorm1d(3200),
-        nn.Linear(3200, 1024),
-        nn.ReLU(),
-        nn.Dropout(0.5),
-        
-        nn.BatchNorm1d(1024),
-        nn.Linear(1024, 1024),
-        nn.ReLU(),
-        nn.Dropout(0.5),
-        
-        nn.BatchNorm1d(1024),
-        nn.Linear(1024, num_emotions),
-    )
-    
-    
-  def forward(self, x):
-    x = self.conv(x)
-    x = x.view(x.size(0), -1)
-    x = self.fc(x)
-    return x
-  
-# create net instance
-net = EmotionRecognizer((48, 48), 7)
-net.to(device)
+    def __init__(self):
+        super(EmotionRecognizer, self).__init__()
+        self.meta = {'mean': [131.45376586914062, 103.98748016357422, 91.46234893798828],
+                     'std': [1, 1, 1],
+                     'imageSize': [224, 224, 3]}
+        self.conv1 = nn.Conv2d(3, 96, kernel_size=[7, 7], stride=(2, 2))
+        self.bn49 = nn.BatchNorm2d(96, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        self.relu1 = nn.ReLU()
+        self.pool1 = nn.MaxPool2d(kernel_size=[3, 3], stride=[2, 2], padding=0, dilation=1, ceil_mode=False)
+        self.conv2 = nn.Conv2d(96, 256, kernel_size=[5, 5], stride=(2, 2), padding=(1, 1))
+        self.bn50 = nn.BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        self.relu2 = nn.ReLU()
+        self.pool2 = nn.MaxPool2d(kernel_size=[3, 3], stride=[2, 2], padding=(0, 0), dilation=1, ceil_mode=True)
+        self.conv3 = nn.Conv2d(256, 512, kernel_size=[3, 3], stride=(1, 1), padding=(1, 1))
+        self.bn51 = nn.BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        self.relu3 = nn.ReLU()
+        self.conv4 = nn.Conv2d(512, 512, kernel_size=[3, 3], stride=(1, 1), padding=(1, 1))
+        self.bn52 = nn.BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        self.relu4 = nn.ReLU()
+        self.conv5 = nn.Conv2d(512, 512, kernel_size=[3, 3], stride=(1, 1), padding=(1, 1))
+        self.bn53 = nn.BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        self.relu5 = nn.ReLU()
+        self.pool5 = nn.MaxPool2d(kernel_size=[3, 3], stride=[2, 2], padding=0, dilation=1, ceil_mode=False)
+        self.fc6 = nn.Conv2d(512, 4096, kernel_size=[6, 6], stride=(1, 1))
+        self.bn54 = nn.BatchNorm2d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        self.relu6 = nn.ReLU()
+        self.fc7 = nn.Conv2d(4096, 4096, kernel_size=[1, 1], stride=(1, 1))
+        self.bn55 = nn.BatchNorm2d(4096, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        self.relu7 = nn.ReLU()
+        self.fc8 = nn.Linear(in_features=4096, out_features=7, bias=True)
 
-# create dataset and wrappers
-path = 'fer2013.csv'
+    def forward(self, data):
+        x1 = self.conv1(data)
+        x2 = self.bn49(x1)
+        x3 = self.relu1(x2)
+        x4 = self.pool1(x3)
+        x5 = self.conv2(x4)
+        x6 = self.bn50(x5)
+        x7 = self.relu2(x6)
+        x8 = self.pool2(x7)
+        x9 = self.conv3(x8)
+        x10 = self.bn51(x9)
+        x11 = self.relu3(x10)
+        x12 = self.conv4(x11)
+        x13 = self.bn52(x12)
+        x14 = self.relu4(x13)
+        x15 = self.conv5(x14)
+        x16 = self.bn53(x15)
+        x17 = self.relu5(x16)
+        x18 = self.pool5(x17)
+        x19 = self.fc6(x18)
+        x20 = self.bn54(x19)
+        x21 = self.relu6(x20)
+        x22 = self.fc7(x21)
+        x23 = self.bn55(x22)
+        x24_preflatten = self.relu7(x23)
+        x24 = x24_preflatten.view(x24_preflatten.size(0), -1)
+        prediction = self.fc8(x24)
+        return prediction
 
-train_dataset = EmotionDataset(path, dataset_type='FER2013', split='Training', transform=transform['train'])
-train_loader = DataLoader(train_dataset, batch_size = BATCH_SIZE, num_workers=4)
-val_dataset = EmotionDataset(path, dataset_type='FER2013', split = 'Validation', transform=transform['validation'])
-val_loader = DataLoader(val_dataset, batch_size = 1)
-
-# Loss function
-# note that CrossEntropyLoss applies softmax and NLL loss
-loss = torch.nn.CrossEntropyLoss()
-
-#Optimizer
-optimizer = optim.Adam(net.parameters(), lr=LR, weight_decay = WEIGHT_DECAY)
-best_acc = 0
-n_batches = len(train_loader)
-#Loop for n_epochs
-for epoch in range(EPOCHS):
-  print("Epoch number {}".format(epoch+1))
-  net = net.train(True)
-  running_loss = 0.0
-  print_every = n_batches/2
-  start_time = time.time()
-  total_train_loss = 0
-
-  for i, data in enumerate(train_loader, 0):
-
-    #Get inputs
-    inputs, labels = data
-
-    #Wrap them in a Variable object
-    inputs, labels = Variable(inputs).to(device), Variable(labels).to(device)
-
-    #Set the parameter gradients to zero
-    optimizer.zero_grad()
-
-    #Forward pass, backward pass, optimize
-    outputs = net(inputs)
-    loss_size = loss(outputs, labels)
-    loss_size.backward()
-    optimizer.step()
-
-    #Print statistics
-    running_loss += loss_size.data.item()
-    total_train_loss += loss_size.data.item()
-
-    if (i + 1) % (print_every + 1) == 0:
-        print("Epoch {}, {:d}% \t train_loss: {:.2f} took: {:.2f}s".format(
-                epoch+1, int(100 * (i+1) / n_batches), running_loss / print_every, time.time() - start_time))
-    #Reset running loss and time
-    running_loss = 0.0
-    start_time = time.time()
-
-  #At the end of the epoch, do a pass on the validation set
-  net.eval()
-  net.train(False)
-  total_val_loss = 0
-  accuracy = 0
-  pred_labels = []
-  true_labels = []
-  softmax = nn.Softmax(dim=0)
-  for inputs, labels in val_loader:
-
-    #Wrap tensors in Variables
-    inputs, labels = Variable(inputs).to(device), Variable(labels).to(device)
-
-    #Forward pass
-    val_outputs = net(inputs)
-    pred_label = torch.argmax(softmax(val_outputs[0])).item()
-    pred_labels.append(pred_label)
-    true_labels.append(labels.item())
-    if pred_label == labels:
-      accuracy = accuracy + 1
-    val_loss_size = loss(val_outputs, labels)
-    total_val_loss += val_loss_size.item()
-  
-  accuracy = accuracy * 100 / len(val_loader)
-  print("Validation loss = {:.2f}".format(total_val_loss / len(val_loader)))
-  print("Validation accuracy = {:.6f}%".format(accuracy))
-  cm = confusion_matrix(true_labels, pred_labels)
-  print(cm)
-  if(accuracy > best_acc):
-    best_acc = accuracy
-    torch.save(net, 'fer2013_model.pt')
