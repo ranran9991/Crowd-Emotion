@@ -108,79 +108,86 @@ video_capture = cv2.VideoCapture(0)
 while True:
     # capture an image
     ret, frame = video_capture.read()
-    (h, w) = frame.shape[:2]
+    cv2.imshow('Crowd Emotion', frame)
+    # if y was clicked
+    if cv2.waitKey(1) & 0xFF == ord('y'):
+        (h, w) = frame.shape[:2]
 
-    # transform image to blob
-    blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0,
-        (300, 300), (104.0, 177.0, 123.0))
-    
-    # detect faces in image
-    net.setInput(blob)
-    detections = net.forward()
-    
-    # faces will hold (X,Y) of top left and bottom right edges of bounding boxes in faces
-    faces = []
+        # transform image to blob
+        blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0,
+            (300, 300), (104.0, 177.0, 123.0))
+        
+        # detect faces in image
+        net.setInput(blob)
+        detections = net.forward()
+        
+        # faces will hold (X,Y) of top left and bottom right edges of bounding boxes in faces
+        faces = []
 
-    # iterate over detections to insert faces into faces list
-    for i in range(0, detections.shape[2]):
-        # confidence in detections
-        confidence = detections[0, 0, i, 2]
+        # iterate over detections to insert faces into faces list
+        for i in range(0, detections.shape[2]):
+            # confidence in detections
+            confidence = detections[0, 0, i, 2]
 
-        # filter out weak detections
-        # threshhold can be changed
-        if confidence < 0.80:
+            # filter out weak detections
+            # threshhold can be changed
+            if confidence < 0.80:
+                continue
+
+            # bounding box
+            box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+            (startX, startY, endX, endY) = box.astype("int")
+            faces.append((startX, startY, endX, endY))
+        
+        # iterate over captured faces
+        predictions = []
+        for (startX, startY, endX, endY) in faces:
+
+            # crop image from original picture
+            faceimg = frame[startY:endY, startX:endX].copy()
+            try:
+                # try to turn face into gray scale
+                faceimg = cv2.cvtColor(faceimg, cv2.COLOR_BGR2GRAY)
+            except:
+                continue
+
+            # prepare image for emotion recognizer
+            faceimg = faceimg[:, :, np.newaxis]
+            # make it have 3 identical channels
+            faceimg = np.concatenate((faceimg, faceimg, faceimg), axis=2).astype(np.uint8)
+            faceimg = Image.fromarray(faceimg)
+            # apply transform
+            faceimg = transform(faceimg)
+            faceimg = faceimg[None]
+            # get emotion confidence
+            out = emotion_net.forward(faceimg)[0]
+            # turn to probabilities
+            out = nn.functional.softmax(out, dim=0)
+            # create new prediction instance
+            pred = Prediction(torch.Tensor(out), Prediction.BoundingBox(startX, startY, endX, endY))
+            # insert the new prediction to the predictions list
+            predictions.append(pred)
+            # get first and second place emotions
+            max1 = out.max(0)[1]
+            out[max1] = 0.0
+            max2 = out.max(0)[1]
+            # prepare emotion string for printing
+            emotion = '1. ' + emotions[max1] + ' ' + '2.' + emotions[max2]
+            cv2.putText(frame, emotion, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255))
+            cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
+        # assign the average function
+        avg_func = average.hard_average
+        # evaluate the average using the given method
+        avg = np.array(avg_func(predictions))
+        # show image
+        cv2.imshow('Pred', frame)
+        k = cv2.waitKey(0)
+        # press q to close the window
+        if k & 0xFF == ord('q'):
+            exit()
+        if k & 0xFF == ord('a'):
+            cv2.destroyWindow('Pred')
             continue
-
-        # bounding box
-        box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-        (startX, startY, endX, endY) = box.astype("int")
-        faces.append((startX, startY, endX, endY))
-    
-    # iterate over captured faces
-    predictions = []
-    for (startX, startY, endX, endY) in faces:
-
-        # crop image from original picture
-        faceimg = frame[startY:endY, startX:endX].copy()
-        try:
-            # try to turn face into gray scale
-            faceimg = cv2.cvtColor(faceimg, cv2.COLOR_BGR2GRAY)
-        except:
-            continue
-
-        # prepare image for emotion recognizer
-        faceimg = faceimg[:, :, np.newaxis]
-        # make it have 3 identical channels
-        faceimg = np.concatenate((faceimg, faceimg, faceimg), axis=2).astype(np.uint8)
-        faceimg = Image.fromarray(faceimg)
-        # apply transform
-        faceimg = transform(faceimg)
-        faceimg = faceimg[None]
-        # get emotion confidence
-        out = emotion_net.forward(faceimg)[0]
-        # turn to probabilities
-        out = nn.functional.softmax(out, dim=0)
-        # create new prediction instance
-        pred = Prediction(torch.Tensor(out), Prediction.BoundingBox(startX, startY, endX, endY))
-        # insert the new prediction to the predictions list
-        predictions.append(pred)
-        # get first and second place emotions
-        max1 = out.max(0)[1]
-        out[max1] = 0.0
-        max2 = out.max(0)[1]
-        # prepare emotion string for printing
-        emotion = '1. ' + emotions[max1] + ' ' + '2.' + emotions[max2]
-        cv2.putText(frame, emotion, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255))
-        cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
-    # assign the average function
-    avg_func = average.hard_average
-    # evaluate the average using the given method
-    avg = np.array(avg_func(predictions))
-    # show image
-    cv2.imshow('Video', frame)
-    # press q to close the window
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
 
 video_capture.release()
 cv2.destroyAllWindows()

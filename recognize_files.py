@@ -1,7 +1,6 @@
-import cv2
-import sys
 import os
 import argparse
+import cv2
 import numpy as np
 import torch
 import torch.nn as nn
@@ -21,10 +20,11 @@ ap = argparse.ArgumentParser()
 ap.add_argument('--emotion', required=True, help='path to emotion net weights')
 ap.add_argument('--face', required=True, help='path to face recognition net weights directory')
 ap.add_argument('--images', required=True, help='path to directory with images')
+ap.add_argument('--method', required=False, help='averaging method, can be "Hard, Soft, Deep. default is Soft')
+ap.add_argument('--threshold', required=False, help='threshold number or face recognition, default is 0.5')
 args = vars(ap.parse_args())
 
 class EmotionRecognizer(nn.Module):
-
     def __init__(self):
         super(EmotionRecognizer, self).__init__()
         self.meta = {'mean': [131.45376586914062, 103.98748016357422, 91.46234893798828],
@@ -85,7 +85,10 @@ class EmotionRecognizer(nn.Module):
         prediction = self.fc8(x24)
         return prediction
 
-
+if args['threshold'] is None or float(args['threshold']) >= 1 or float(args['threshold']) <= 0:
+    threshold = 0.5
+else:
+    threshold = float(args['threshold'])
 
 net_path = args['face']
 emotion_net_path = args['emotion']
@@ -107,7 +110,7 @@ emotion_net.load_state_dict(state_dict)
 # evaluation mode
 emotion_net.eval()
 
-emotions = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
+emotions = ['Anger', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
 
 for image in os.listdir(images_path):
     print('Working on image: {}'.format(image))
@@ -137,7 +140,7 @@ for image in os.listdir(images_path):
 
         # filter out weak detections
         # threshhold can be changed
-        if confidence < 0.80:
+        if confidence < threshold:
             continue
 
         # bounding box
@@ -173,21 +176,29 @@ for image in os.listdir(images_path):
         pred = Prediction(torch.Tensor(out), Prediction.BoundingBox(startX, startY, endX, endY))
         # insert the new prediction to the predictions list
         predictions.append(pred)
-        # get first and second place emotions
+        # get first place emotion
         max1 = out.max(0)[1]
-        out[max1] = 0.0
-        max2 = out.max(0)[1]
         # prepare emotion string for printing
-        emotion = '1.' + emotions[max1] + ' ' + '2.' + emotions[max2]
-        cv2.putText(frame, emotion, (startX-5, startY-10), cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.5, (255, 255, 255))
+        emotion = emotions[max1]
+        cv2.putText(frame, emotion, (startX-5, startY-10), cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.7, (255, 255, 255))
         cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
+
+    if args['method'] is None:
+        if args['method'] == 'Hard':
+            avg_func = average.hard_average
+        elif args['method'] == 'Soft':
+            avg_func = average.soft_average
+        elif args['method'] == 'Deep':
+            avg_func = average.depth_sqrt_average
+    else:
+        avg_func = average.soft_average
     # assign the average function
-    avg_func = average.soft_average
+    avg_func = average.depth_sqrt_average
     # evaluate the average using the given method
     avg = avg_func(predictions)
     max_average = avg.max(0)[1]
     emotion = emotions[max_average]
-    cv2.putText(frame, emotion, (10, 10), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1.0, (255, 255, 255))
+    cv2.putText(frame, emotion, (10, 15), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255))
     new_image_path = os.path.join(save_path, image)
     cv2.imwrite(new_image_path, frame)
     

@@ -1,3 +1,4 @@
+import torch
 def hard_average(predictions):
     """averages out input vectors by averaging their hard predictions isntead of whole confidence vectors
     
@@ -15,13 +16,15 @@ def hard_average(predictions):
     for pred in predictions:
         # increase the counter of highest probability in the prediction
         max_place = pred.out.max(0)[1]
+        print('Vector: {}, Max index: {}'.format(pred.out, max_place))
         counters[max_place] += 1
 
+    print('Counters: {}'.format(counters))
     # return the confidences with 1 in the maximum place and 0 in the others
     max_place = counters.index(max(counters))
     out = [0 for i in range(pred_len)]
     out[max_place] = 1
-    return out
+    return torch.Tensor(out)
 
 
 def soft_average(predictions):
