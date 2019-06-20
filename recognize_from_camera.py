@@ -110,17 +110,21 @@ while True:
             # insert the new prediction to the predictions list
             predictions.append(pred)
             # get first and second place emotions
-            max1 = out.max(0)[1]
-            out[max1] = 0.0
-            max2 = out.max(0)[1]
+            out_temp = out.clone().detach()
+            max1 = out_temp.max(0)[1]
+            out_temp[max1] = 0.0
+            max2 = out_temp.max(0)[1]
             # prepare emotion string for printing
             emotion = '1. ' + emotions[max1] + ' ' + '2.' + emotions[max2]
             cv2.putText(frame, emotion, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255))
             cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 255, 0), 2)
         # assign the average function
-        avg_func = average.hard_average
+        avg_func = average.soft_average
         # evaluate the average using the given method
-        avg = np.array(avg_func(predictions))
+        avg = avg_func(predictions)
+        max_average = avg.max(0)[1]
+        emotion = emotions[max_average]
+        cv2.putText(frame, emotion, (10, 15), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255, 255, 255))
         # show image
         cv2.imshow('Pred', frame)
         k = cv2.waitKey(0)
