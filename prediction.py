@@ -1,5 +1,4 @@
 class Prediction:
-
     class BoundingBox:
         def __init__(self, start_x=0, start_y=0, end_x=0, end_y=0):
             self.start_x = start_x
