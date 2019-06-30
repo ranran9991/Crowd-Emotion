@@ -31,8 +31,7 @@ Next, you should look over the folders and remove pictures that are not suitble,
 
 run the cutface.py script with the -p / --path argument. This would grayscale the images and cut the faces from the pictures, removing the old pictures in the process.
 
-
-python cutface.py -p path/to/dataset/folder
+    python cutface.py -p path/to/dataset/folder
 
 Note: I got preety poor results using this method, opencv did not manage to cut the faces very well and i got lots of false positives, it will probably be better to use existing datasets if possible
 
@@ -62,3 +61,39 @@ dataset = EmotionDataset(path,
 # create data loader
 training_loader = DataLoader(dataset, batch_size=1, num_workers=4)
 ```
+
+## Running the script
+### Requirements
+ - Python 3.6
+ - OpenCV (downloaded with pip)
+ - Pytorch (1.1 was used, should work with newer versions)
+ 
+ All the scripts require two things:
+ - Weights of the face detection NN (in the utils folder)
+ - Weights of the emotion recognition NN (download from [here](www.google.com)
+ 
+ ### Recognizing emotions from files
+ Getting predictions on a folder filled with images
+ 
+ Run the following command
+ 
+      python recognize_files.py --emotion /utils --face path/to/emotion/net/weights --images path/to/image/folder
+      
+ You could also set the averaging method by adding the flag --method Hard/Soft/Deep. default is Soft
+ 
+ You could also set the confidence threshold for the face recognition dnn by adding the flag --threshold, default is 0.5
+ ### Recognizing emotions from camera
+ Getting predictions from the camera
+ 
+ Run the following command 
+ 
+     python recognize_from_camera.py --emotion /utils --face path/to/emotion/net/weights
+ It uses the first available camera, on a laptop that will be the laptop builtin camera, To other cameras add the flag --camera <camera_num>, 0 for first camera, then 1,2,3...
+ 
+ ## Training
+ The training uses the FER2013 dataset, it assumes you the fer2013.csv file in the current working directory
+ Run
+ 
+     python train.py 
+ The script saves a file called `fer2013_model.pt` which holds the weights of the trained model.
+ 
