@@ -90,6 +90,8 @@ training_loader = DataLoader(dataset, batch_size=1, num_workers=4)
      python recognize_from_camera.py --emotion /utils --face path/to/emotion/net/weights
  It uses the first available camera, on a laptop that will be the laptop builtin camera, To other cameras add the flag --camera <camera_num>, 0 for first camera, then 1,2,3...
  
+ This script is used in this manner:
+ At first, it displayes images from the camera, to capture an image press 'y'. After an image was captured the model will calculate a prediction over it and display the prediction. pressing 'a' will return to the capture screen and pressing 'q' will exit the script.
  ## Training
  The training uses the FER2013 dataset, it assumes you the fer2013.csv file in the current working directory
  Run
