@@ -70,7 +70,7 @@ training_loader = DataLoader(dataset, batch_size=1, num_workers=4)
  
  All the scripts require two things:
  - Weights of the face detection NN (in the utils folder)
- - Weights of the emotion recognition NN (download from [here](www.google.com)
+ - Weights of the emotion recognition NN (download from [here](http://www.robots.ox.ac.uk/~albanie/models/pytorch-mcn/vgg_m_face_bn_fer_dag.pth)
  
  ### Recognizing emotions from files
  Getting predictions on a folder filled with images
